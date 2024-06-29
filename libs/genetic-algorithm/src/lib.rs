@@ -1,33 +1,38 @@
-///
-///  Учимся летать: симуляция эволюции на Rust. 3/5
-///  https://habr.com/ru/companies/timeweb/articles/820699/
-///
+use rand::RngCore;
+
+mod chromosome;
+mod crossover;
+mod genetic_algorithm;
+mod mutation;
+mod selection;
+
+pub use chromosome::Chromosome;
+pub use crossover::UniformCrossover;
+pub use genetic_algorithm::GeneticAlgorithm;
+pub use mutation::GaussianMutation;
+pub use selection::RouletteWheelSelection;
 
 pub trait Individual {
+    fn create(chromosome: Chromosome) -> Self;
     fn fitness(&self) -> f32;
+    fn chromosome(&self) -> &Chromosome;
 }
 
 pub trait SelectionMethod {
-    fn select<'a, I>(&self, population: &'a [I]) -> &'a I
+    fn select<'a, R, I>(&self, rng: &mut R, population: &'a [I]) -> &'a I
     where
+        R: RngCore,
         I: Individual;
 }
 
-pub struct GeneticAlgorithm;
-impl GeneticAlgorithm {
-    pub fn evolve<I>(&self, population: &[I]) -> Vec<I>
+pub trait CrossoverMethod {
+    fn crossover<R>(&self, rng: &mut R, parent_a: &Chromosome, parent_b: &Chromosome) -> Chromosome
     where
-        I: Individual,
-    {
-        assert!(!population.is_empty());
+        R: RngCore;
+}
 
-        (0..population.len())
-            .map(|_| {
-                // TODO отбор
-                // TODO скрещивание
-                // TODO мутация
-                todo!()
-            })
-            .collect()
-    }
+pub trait MutationMethod {
+    fn mutate<R>(&self, rng: &mut R, child: &mut Chromosome)
+    where
+        R: RngCore;
 }
