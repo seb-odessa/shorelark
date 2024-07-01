@@ -4,18 +4,18 @@ use nalgebra as na;
 use rand::{Rng, RngCore};
 
 // FRAC_PI_2 = PI / 2.0; a convenient shortcut
-use std::f32::consts::FRAC_PI_2;
+use std::f32::consts::FRAC_PI_4;
 
 /// Minimum speed of a bird.
 ///
 /// Keeping it above zero prevents birds from getting stuck in one place.
-const SPEED_MIN: f32 = 0.001;
+const SPEED_MIN: f32 = 0.0001;
 
 /// Maximum speed of a bird.
 ///
 /// Keeping it "sane" prevents birds from accelerating up to infinity,
 /// which makes the simulation... unrealistic :-)
-const SPEED_MAX: f32 = 0.005;
+const SPEED_MAX: f32 = 0.002;
 
 /// Speed acceleration; determines how much the brain can affect bird's
 /// speed during one step.
@@ -31,7 +31,7 @@ const SPEED_MAX: f32 = 0.005;
 /// This improves simulation faithfulness, because - as in real life -
 /// it's not possible to increase speed from 1km/h to 50km/h in one
 /// instant, even if your brain very much wants to.
-const SPEED_ACCEL: f32 = 0.2;
+const SPEED_ACCEL: f32 = 0.02;
 
 /// Ditto, but for rotation:
 ///
@@ -40,7 +40,7 @@ const SPEED_ACCEL: f32 = 0.2;
 ///
 /// I've chosen PI/2, because - as our motto goes - this value seems
 /// to play nice.
-const ROTATION_ACCEL: f32 = FRAC_PI_2;
+const ROTATION_ACCEL: f32 = FRAC_PI_4;
 
 /// How much `.step()`-s have to occur before we push data into the
 /// genetic algorithm.
@@ -70,7 +70,7 @@ impl Simulation {
         let ga = ga::GeneticAlgorithm::new(
             ga::RouletteWheelSelection,
             ga::UniformCrossover,
-            ga::GaussianMutation::new(0.01, 0.3),
+            ga::GaussianMutation::new(0.01, 0.2),
         );
 
         Self { world, ga, age: 0 }
@@ -80,21 +80,30 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self, rng: &mut dyn RngCore) {
+    pub fn step(&mut self, rng: &mut dyn RngCore) -> Option<ga::Statistics> {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
 
         self.age += 1;
         if self.age > GENERATION_LENGTH {
-            self.evolve(rng);
+            Some(self.evolve(rng))
+        } else {
+            None
+        }
+    }
+
+    pub fn train(&mut self, rng: &mut dyn RngCore) -> ga::Statistics {
+        loop {
+            if let Some(summary) = self.step(rng) {
+                return summary;
+            }
         }
     }
 
     fn process_movements(&mut self) {
         for animal in &mut self.world.animals {
             animal.position += animal.rotation * na::Vector2::new(0.0, animal.speed);
-
             animal.position.x = na::wrap(animal.position.x, 0.0, 1.0);
             animal.position.y = na::wrap(animal.position.y, 0.0, 1.0);
         }
@@ -149,7 +158,7 @@ impl Simulation {
         }
     }
 
-    fn evolve(&mut self, rng: &mut dyn RngCore) {
+    fn evolve(&mut self, rng: &mut dyn RngCore) -> ga::Statistics {
         self.age = 0;
 
         // Transforms `Vec<Animal>` to `Vec<AnimalIndividual>`
@@ -161,7 +170,7 @@ impl Simulation {
             .collect();
 
         // Evolves this `Vec<AnimalIndividual>`
-        let evolved_population = self.ga.evolve(rng, &current_population);
+        let (evolved_population, stats) = self.ga.evolve(rng, &current_population);
 
         // Transforms `Vec<AnimalIndividual>` back into `Vec<Animal>`
         self.world.animals = evolved_population
@@ -172,5 +181,7 @@ impl Simulation {
         for food in &mut self.world.foods {
             food.position = rng.gen();
         }
+
+        stats
     }
 }

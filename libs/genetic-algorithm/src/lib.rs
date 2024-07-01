@@ -5,12 +5,14 @@ mod crossover;
 mod genetic_algorithm;
 mod mutation;
 mod selection;
+mod statistics;
 
 pub use chromosome::Chromosome;
 pub use crossover::UniformCrossover;
 pub use genetic_algorithm::GeneticAlgorithm;
 pub use mutation::GaussianMutation;
 pub use selection::RouletteWheelSelection;
+pub use statistics::Statistics;
 
 pub trait Individual {
     fn create(chromosome: Chromosome) -> Self;

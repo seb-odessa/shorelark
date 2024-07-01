@@ -8,7 +8,7 @@ pub struct World {
 }
 impl World {
     pub fn random(rng: &mut dyn RngCore) -> Self {
-        let animals = (0..40)
+        let animals = (0..10)
             .map(|_| Animal::random(rng))
             .collect();
 
