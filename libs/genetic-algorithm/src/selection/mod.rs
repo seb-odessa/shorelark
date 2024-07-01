@@ -1,11 +1,11 @@
 use crate::{Individual, SelectionMethod};
 use rand::{seq::SliceRandom, RngCore};
 
+#[derive(Debug)]
 pub struct RouletteWheelSelection;
 impl SelectionMethod for RouletteWheelSelection {
-    fn select<'a, R, I>(&self, rng: &mut R, population: &'a [I]) -> &'a I
+    fn select<'a, I>(&self, rng: &mut dyn RngCore, population: &'a [I]) -> &'a I
     where
-        R: RngCore,
         I: Individual,
     {
         population

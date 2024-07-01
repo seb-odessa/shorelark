@@ -2,6 +2,7 @@ use rand::RngCore;
 
 use crate::{CrossoverMethod, Individual, MutationMethod, SelectionMethod};
 
+#[derive(Debug)]
 pub struct GeneticAlgorithm<S, C, M> {
     selection_method: S,
     crossover_method: C,
@@ -22,9 +23,8 @@ where
         }
     }
 
-    pub fn evolve<R, I>(&self, rng: &mut R, population: &[I]) -> Vec<I>
+    pub fn evolve<I>(&self, rng: &mut dyn RngCore, population: &[I]) -> Vec<I>
     where
-        R: RngCore,
         I: Individual,
     {
         assert!(!population.is_empty());

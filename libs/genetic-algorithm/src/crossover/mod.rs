@@ -3,12 +3,11 @@ use rand::RngCore;
 
 use crate::{Chromosome, CrossoverMethod};
 
+#[derive(Debug)]
 pub struct UniformCrossover;
 
 impl CrossoverMethod for UniformCrossover {
-    fn crossover<R>(&self, rng: &mut R, parent_a: &Chromosome, parent_b: &Chromosome) -> Chromosome
-    where
-        R: RngCore,
+    fn crossover(&self, rng: &mut dyn RngCore, parent_a: &Chromosome, parent_b: &Chromosome) -> Chromosome
     {
         assert_eq!(parent_a.len(), parent_b.len());
         parent_a

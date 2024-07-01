@@ -19,20 +19,20 @@ pub trait Individual {
 }
 
 pub trait SelectionMethod {
-    fn select<'a, R, I>(&self, rng: &mut R, population: &'a [I]) -> &'a I
+    fn select<'a, I>(&self, rng: &mut dyn RngCore, population: &'a [I]) -> &'a I
     where
-        R: RngCore,
         I: Individual;
 }
 
 pub trait CrossoverMethod {
-    fn crossover<R>(&self, rng: &mut R, parent_a: &Chromosome, parent_b: &Chromosome) -> Chromosome
-    where
-        R: RngCore;
+    fn crossover(
+        &self,
+        rng: &mut dyn RngCore,
+        parent_a: &Chromosome,
+        parent_b: &Chromosome,
+    ) -> Chromosome;
 }
 
 pub trait MutationMethod {
-    fn mutate<R>(&self, rng: &mut R, child: &mut Chromosome)
-    where
-        R: RngCore;
+    fn mutate(&self, rng: &mut dyn RngCore, child: &mut Chromosome);
 }
